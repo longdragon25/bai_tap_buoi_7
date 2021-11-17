@@ -86,13 +86,13 @@ _header(Movie? movie) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${movie!.name!}",
+                  "${movie.name!}",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
                 SizedBox(
                   height: 20,
                 ),
-                Text("Xuất bản: ${movie!.releaseDate!}"),
+                Text("Xuất bản: ${movie.releaseDate!}"),
                 SizedBox(
                   height: 30,
                 ),
