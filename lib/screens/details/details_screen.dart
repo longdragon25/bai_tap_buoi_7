@@ -1,12 +1,31 @@
+import 'package:bai_tap_buoi_7/data_sources/api_services.dart';
 import 'package:bai_tap_buoi_7/models/Cast.dart';
 import 'package:bai_tap_buoi_7/models/Movie.dart';
 import 'package:bai_tap_buoi_7/models/MovieModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-class DetailsScreen extends StatelessWidget {
+class DetailsScreen extends StatefulWidget {
   final MovieModel? movie;
-  const DetailsScreen({Key? key, this.movie}) : super(key: key);
+  final Cast? cast;
+  const DetailsScreen({Key? key, this.movie, this.cast}) : super(key: key);
+
+  @override
+  State<DetailsScreen> createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  Future<List<Cast>>? futureCastList;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadCast(widget.movie!.id!);
+  }
+
+  loadCast(int idMovie) {
+    futureCastList = ApiServices().fetchCast(idMovie);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +49,7 @@ class DetailsScreen extends StatelessWidget {
       body: Stack(
         children: [
           Image.network(
-            "https://image.tmdb.org/t/p/original" + movie!.backdropPath!,
+            "https://image.tmdb.org/t/p/original" + widget.movie!.backdropPath!,
             fit: BoxFit.cover,
             height: MediaQuery.of(context).size.height,
           ),
@@ -38,14 +57,15 @@ class DetailsScreen extends StatelessWidget {
             height: MediaQuery.of(context).size.height,
             color: Colors.white.withOpacity(0.8),
           ),
-          _body(context, movie)
+          _body(context, widget.movie, futureCastList)
         ],
       ),
     );
   }
 }
 
-_body(BuildContext context, MovieModel? movie) {
+_body(BuildContext context, MovieModel? movie,
+    Future<List<Cast>>? futureCastList) {
   return ListView(
     shrinkWrap: true,
     physics: ClampingScrollPhysics(),
@@ -57,11 +77,11 @@ _body(BuildContext context, MovieModel? movie) {
       SizedBox(
         height: 20,
       ),
-      _cast(),
+      _cast(futureCastList),
       SizedBox(
         height: 20,
       ),
-      _overview()
+      _overview(movie)
     ],
   );
 }
@@ -119,7 +139,7 @@ _header(MovieModel? movie) {
   );
 }
 
-_cast() {
+_cast(Future<List<Cast>>? futureCastList) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: Column(
@@ -133,14 +153,37 @@ _cast() {
           height: 10,
         ),
         Container(
-          height: 180,
-          child: ListView.builder(
-              shrinkWrap: true,
-              physics: ClampingScrollPhysics(),
-              itemCount: listItemCast.length,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) => _itemCast(listItemCast[index])),
-        )
+            height: 180,
+            child: FutureBuilder<List<Cast>>(
+              future: futureCastList,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text("Load du lieu loi"),
+                  );
+                }
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                List<Cast> listCast = snapshot.data!;
+                return ListView.builder(
+                    shrinkWrap: true,
+                    physics: ClampingScrollPhysics(),
+                    itemCount: listCast.length,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) =>
+                        _itemCast(listCast[index]));
+              },
+            )
+            // ListView.builder(
+            //     shrinkWrap: true,
+            //     physics: ClampingScrollPhysics(),
+            //     itemCount: listItemCast.length,
+            //     scrollDirection: Axis.horizontal,
+            //     itemBuilder: (context, index) => _itemCast(listItemCast[index])),
+            )
       ],
     ),
   );
@@ -158,7 +201,9 @@ _itemCast(Cast itemCast) {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
                 image: DecorationImage(
-                    image: AssetImage(itemCast.urlPhoto!), fit: BoxFit.cover)),
+                    image: NetworkImage("https://image.tmdb.org/t/p/w500" +
+                        itemCast.profilePath!),
+                    fit: BoxFit.cover)),
           ),
         ),
         SizedBox(
@@ -180,7 +225,7 @@ _itemCast(Cast itemCast) {
   );
 }
 
-_overview() {
+_overview(MovieModel? movie) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: Column(
@@ -194,7 +239,7 @@ _overview() {
           height: 15,
         ),
         Text(
-          "Nội dung Squid Game xoay quanh những trò chơi tử thần dựa theo trò chơi quen thuộc của trẻ em Hàn Quốc ngày xưa, được tổ chức tại địa điểm bí mật bởi một tổ chức bí ẩn ở Hàn Quốc gồm 456 người tham gia, là những người đang chìm trong nợ nần, gặp khó khăn trong tài chính. Người chiến thắng vượt qua 6 vòng chơi sẽ nhận được phần thưởng 45.6 tỷ won. Đổi lại kẻ thua cuộc sẽ phải trả giá bằng chính mạng sống của mình.",
+          movie!.overview!,
           style: TextStyle(fontSize: 16),
         )
       ],
