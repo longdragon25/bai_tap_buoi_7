@@ -1,10 +1,11 @@
 import 'package:bai_tap_buoi_7/models/Cast.dart';
 import 'package:bai_tap_buoi_7/models/Movie.dart';
+import 'package:bai_tap_buoi_7/models/MovieModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 class DetailsScreen extends StatelessWidget {
-  final Movie? movie;
+  final MovieModel? movie;
   const DetailsScreen({Key? key, this.movie}) : super(key: key);
 
   @override
@@ -28,8 +29,8 @@ class DetailsScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          Image.asset(
-            movie!.urlPhoto!,
+          Image.network(
+            "https://image.tmdb.org/t/p/original" + movie!.backdropPath!,
             fit: BoxFit.cover,
             height: MediaQuery.of(context).size.height,
           ),
@@ -44,7 +45,7 @@ class DetailsScreen extends StatelessWidget {
   }
 }
 
-_body(BuildContext context, Movie? movie) {
+_body(BuildContext context, MovieModel? movie) {
   return ListView(
     shrinkWrap: true,
     physics: ClampingScrollPhysics(),
@@ -65,7 +66,7 @@ _body(BuildContext context, Movie? movie) {
   );
 }
 
-_header(Movie? movie) {
+_header(MovieModel? movie) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16),
     child: Row(
@@ -77,7 +78,9 @@ _header(Movie? movie) {
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               image: DecorationImage(
-                  image: AssetImage(movie!.urlPhoto!), fit: BoxFit.cover)),
+                  image: NetworkImage(
+                      "https://image.tmdb.org/t/p/w500" + movie!.posterPath!),
+                  fit: BoxFit.cover)),
         ),
         Expanded(
           child: Padding(
@@ -86,7 +89,7 @@ _header(Movie? movie) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${movie.name!}",
+                  "${movie.title!}",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 ),
                 SizedBox(
